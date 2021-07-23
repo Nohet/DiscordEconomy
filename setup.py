@@ -7,7 +7,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="DiscordEconomy",
-    version="1.0",
+    version="1.1",
     description="Discord.py extension to create economy easily.",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -21,7 +21,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
     ],
-    keywords="api, ivall api wrapper, wrapper",
+    keywords="discord, discord extension, discord.py, economy, economy bot, discord economy",
     packages=find_packages(),
     install_requires=["discord.py"],
 )
