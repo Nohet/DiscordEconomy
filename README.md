@@ -313,7 +313,7 @@ await get_user(user_id)
 await delete_user_account(user_id)
 await get_all_data()
 await add_money(user_id, value, amount)
-await remove_money(user_id, value, amount):
+await remove_money(user_id, value, amount)
 await set_money(user_id, value, amount)
 await add_item(user_id, item)
 await remove_item(user_id, item)
