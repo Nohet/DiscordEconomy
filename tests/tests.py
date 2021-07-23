@@ -1,15 +1,3 @@
-# DiscordEconomy 1.0
-Discord.py extension to create economy easily.
-
-[![Downloads](https://i.imgur.com/BCr1sIV.png)](https://paypal.me/DiscordEconomy)
-
-## Installation
-
-You can install package directly from pypi
-
-`pip install DiscordEconomy`
-## Example Usage
-```python
 import random
 
 import discord
@@ -299,27 +287,3 @@ async def items(ctx):
 
 
 client.run()
-```
-
-
-
-## Functions available
-
-The current list of asynchronous functions available are:
-
-```python
-await is_registered(user_id)
-await get_user(user_id)
-await delete_user_account(user_id)
-await get_all_data()
-await add_money(user_id, value, amount)
-await remove_money(user_id, value, amount):
-await set_money(user_id, value, amount)
-await add_item(user_id, item)
-await remove_item(user_id, item)
- ```
- 
- ## Important Links
- * Donate - [Click Here](https://paypal.me/DiscordEconomy)           
- * Documentation - *soon*
-
