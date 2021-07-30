@@ -1,7 +1,9 @@
-# DiscordEconomy 1.1
+# DiscordEconomy 1.2
+[![Downloads](https://pepy.tech/badge/discordeconomy)](https://pepy.tech/project/discordeconomy)
+
 Discord.py extension to create economy easily.
 
-[![Downloads](https://i.imgur.com/BCr1sIV.png)](https://paypal.me/DiscordEconomy)
+[![Donate](https://i.imgur.com/BCr1sIV.png)](https://paypal.me/DiscordEconomy)
 
 ## Installation
 
