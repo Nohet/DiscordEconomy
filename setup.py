@@ -7,7 +7,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="DiscordEconomy",
-    version="1.1",
+    version="1.2",
     description="Discord.py extension to create economy easily.",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -23,5 +23,5 @@ setup(
     ],
     keywords="discord, discord extension, discord.py, economy, economy bot, discord economy",
     packages=find_packages(),
-    install_requires=["discord.py"],
+    install_requires=["discord.py", "aiosqlite"],
 )
