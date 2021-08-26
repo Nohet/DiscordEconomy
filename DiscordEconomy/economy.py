@@ -19,7 +19,6 @@ class Economy:
         loop.run_until_complete(is_table_exists())
 
     async def is_registered(self, user_id):
-        await is_table_exists()
 
         con = await aiosqlite.connect("database.db")
         c = await con.cursor()
@@ -35,7 +34,6 @@ class Economy:
         return True
 
     async def get_user(self, user_id):
-        await is_table_exists()
 
         con = await aiosqlite.connect("database.db")
         c = await con.cursor()
@@ -48,7 +46,6 @@ class Economy:
         return r
 
     async def delete_user_account(self, user_id):
-        await is_table_exists()
 
         con = await aiosqlite.connect("database.db")
         c = await con.cursor()
@@ -60,7 +57,6 @@ class Economy:
         return True
 
     async def get_all_data(self):
-        await is_table_exists()
 
         con = await aiosqlite.connect("database.db")
         c = await con.cursor()
@@ -73,7 +69,6 @@ class Economy:
         return r
 
     async def add_money(self, user_id, value, amount):
-        await is_table_exists()
 
         con = await aiosqlite.connect("database.db")
         c = await con.cursor()
@@ -92,7 +87,6 @@ class Economy:
         return True
 
     async def remove_money(self, user_id, value, amount):
-        await is_table_exists()
 
         con = await aiosqlite.connect("database.db")
         c = await con.cursor()
@@ -111,7 +105,6 @@ class Economy:
         return True
 
     async def set_money(self, user_id, value, amount):
-        await is_table_exists()
 
         con = await aiosqlite.connect("database.db")
         c = await con.cursor()
@@ -123,7 +116,6 @@ class Economy:
         return True
 
     async def add_item(self, user_id, item):
-        await is_table_exists()
 
         con = await aiosqlite.connect("database.db")
         c = await con.cursor()
@@ -149,7 +141,6 @@ class Economy:
         return True
 
     async def remove_item(self, user_id, item):
-        await is_table_exists()
 
         con = await aiosqlite.connect("database.db")
         c = await con.cursor()
