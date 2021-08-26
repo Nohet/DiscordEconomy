@@ -1,3 +1,5 @@
+import asyncio
+
 import aiosqlite
 
 
@@ -12,6 +14,9 @@ async def is_table_exists():
 
 
 class Economy:
+    def __init__(self):
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(is_table_exists())
 
     async def is_registered(self, user_id):
         await is_table_exists()
