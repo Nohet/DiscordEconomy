@@ -1,6 +1,7 @@
 import asyncio
-
 import aiosqlite
+
+from .exceptions import (NoItemFound, ItemAlreadyExists)
 
 
 async def is_table_exists():
@@ -31,6 +32,7 @@ class Economy:
 
         await con.commit()
         await con.close()
+
         return True
 
     async def get_user(self, user_id):
@@ -51,6 +53,7 @@ class Economy:
         c = await con.cursor()
 
         await c.execute("DELETE FROM economy WHERE id = ?", (user_id,))
+
         await con.commit()
         await con.close()
 
@@ -110,6 +113,7 @@ class Economy:
         c = await con.cursor()
 
         await c.execute(f"UPDATE economy SET {value} = ? WHERE id = ?", (amount, user_id,))
+
         await con.commit()
         await con.close()
 
@@ -127,7 +131,7 @@ class Economy:
         your_items = your_items.split(" | ")
 
         if item in your_items:
-            return "You already have this item!"
+            raise ItemAlreadyExists("You already have this item!")
 
         your_items.append(item)
         your_items = str.join(" | ", your_items)
@@ -171,4 +175,4 @@ class Economy:
             return True
 
         else:
-            return "You don't have this item!"
+            raise NoItemFound("You don't have this item!")
