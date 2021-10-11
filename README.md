@@ -1,15 +1,34 @@
-# DiscordEconomy 1.3
+# DiscordEconomy 1.3.1
 [![Downloads](https://pepy.tech/badge/discordeconomy)](https://pepy.tech/project/discordeconomy)
 
-Discord.py extension to create economy easily.
-
-[![Donate](https://i.imgur.com/BCr1sIV.png)](https://paypal.me/DiscordEconomy)
-
+Discord.py, other libs, and forks(pycord, nextcord etc.) extension to create economy easily.
 ## Installation
 
 You can install package directly from pypi
 
 `pip install DiscordEconomy`
+ 
+## Functions available
+
+The current list of asynchronous functions available are:
+
+```python
+await is_registered(user_id)
+await get_user(user_id)
+await delete_user_account(user_id)
+await get_all_data()
+await add_money(user_id, value, amount)
+await remove_money(user_id, value, amount)
+await set_money(user_id, value, amount)
+await add_item(user_id, item)
+await remove_item(user_id, item)
+ ```
+
+
+ ## Important Links
+ * Documentation - *soon*
+
+
 ## Example Usage
 ```python
 import random
@@ -339,29 +358,6 @@ async def sell(ctx: commands.Context, *, _item: str):
         embed.add_field(name="Error", value=f"You don't have this item!")
         await ctx.send(embed=embed)
 
-
+# Pass here token as string
 client.run()
 ```
-
-
-
-## Functions available
-
-The current list of asynchronous functions available are:
-
-```python
-await is_registered(user_id)
-await get_user(user_id)
-await delete_user_account(user_id)
-await get_all_data()
-await add_money(user_id, value, amount)
-await remove_money(user_id, value, amount)
-await set_money(user_id, value, amount)
-await add_item(user_id, item)
-await remove_item(user_id, item)
- ```
- 
- ## Important Links
- * Donate - [Click Here](https://paypal.me/DiscordEconomy)           
- * Documentation - *soon*
-

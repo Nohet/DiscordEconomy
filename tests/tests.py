@@ -325,5 +325,5 @@ async def sell(ctx: commands.Context, *, _item: str):
         embed.add_field(name="Error", value=f"You don't have this item!")
         await ctx.send(embed=embed)
 
-
+# Pass here token as string
 client.run()
