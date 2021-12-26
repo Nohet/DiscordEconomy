@@ -1,14 +1,14 @@
-# DiscordEconomy 1.3.1
+# DiscordEconomy 1.3.2
 [![Downloads](https://pepy.tech/badge/discordeconomy)](https://pepy.tech/project/discordeconomy)
 
 Discord.py, other libs, and forks(pycord, nextcord etc.) extension to create economy easily.
-## Installation
+## ⚙️| Installation
 
 You can install package directly from pypi
 
 `pip install DiscordEconomy`
  
-## Functions available
+## 🔧 | Functions available
 
 The current list of asynchronous functions available are:
 
@@ -25,11 +25,12 @@ await remove_item(user_id, item)
  ```
 
 
- ## Important Links
+ ## 🔗 | Important Links
  * Documentation - *soon*
+   (do someone even need documentation?)
 
 
-## Example Usage
+## 🚀 | Example Usage
 ```python
 import random
 
@@ -113,9 +114,9 @@ async def balance(ctx: commands.Context, member: discord.Member = None):
     embed = discord.Embed(
         colour=discord.Color.from_rgb(244, 182, 89)
     )
-    embed.add_field(name=f"{member.display_name}'s balance", value=f"""Bank: **{user_account[1]}**
-                                                                     Wallet: **{user_account[2]}**
-                                                                     Items: **{user_account[3]}**""")
+    embed.add_field(name=f"{member.display_name}'s balance", value=f"""Bank: **{user_account.bank}**
+                                                                     Wallet: **{user_account.wallet}**
+                                                                     Items: **{user_account.items}**""")
     embed.set_footer(text=f"Invoked by {ctx.message.author.name}", icon_url=ctx.message.author.avatar_url)
     await ctx.send(embed=embed)
 
@@ -136,16 +137,15 @@ async def reward(ctx: commands.Context):
 
 @client.command()
 @is_registered
-async def coinflip(ctx: commands.Context, money: int, arg):
+async def coinflip(ctx: commands.Context, money: int, arg: str):
     arg = arg.lower()
     random_arg = random.choice(["tails", "heads"])
     multi_money = money * 2
     r = await economy.get_user(ctx.message.author.id)
-    r = r[1]
     embed = discord.Embed(
         colour=discord.Color.from_rgb(244, 182, 89)
     )
-    if r >= money:
+    if r.bank >= money:
         if arg == random_arg:
             await economy.add_money(ctx.message.author.id, "bank", multi_money)
 
@@ -181,11 +181,10 @@ async def slots(ctx: commands.Context, money: int):
         if i == len(random_slots_data):
             break
     r = await economy.get_user(ctx.message.author.id)
-    r = r[1]
     embed = discord.Embed(
         colour=discord.Color.from_rgb(244, 182, 89)
     )
-    if r >= money:
+    if r.bank >= money:
 
         embed.add_field(name="Slots", value=f"""{random_slots_data[0]} | {random_slots_data[1]} | {random_slots_data[2]}
                                                 {random_slots_data[3]} | {random_slots_data[4]} | {random_slots_data[5]}
@@ -210,11 +209,11 @@ async def slots(ctx: commands.Context, money: int):
 @is_registered
 async def withdraw(ctx: commands.Context, money: int):
     r = await economy.get_user(ctx.message.author.id)
-    r = r[1]
     embed = discord.Embed(
         colour=discord.Color.from_rgb(244, 182, 89)
     )
-    if r >= money:
+
+    if r.bank >= money:
         await economy.add_money(ctx.message.author.id, "wallet", money)
         await economy.remove_money(ctx.message.author.id, "bank", money)
 
@@ -233,11 +232,11 @@ async def withdraw(ctx: commands.Context, money: int):
 @is_registered
 async def deposit(ctx: commands.Context, money: int):
     r = await economy.get_user(ctx.message.author.id)
-    r = r[2]
     embed = discord.Embed(
         colour=discord.Color.from_rgb(244, 182, 89)
     )
-    if r >= money:
+
+    if r.wallet >= money:
         await economy.add_money(ctx.message.author.id, "bank", money)
         await economy.remove_money(ctx.message.author.id, "wallet", money)
 
@@ -291,22 +290,23 @@ async def buy(ctx: commands.Context, *, _item: str):
     embed = discord.Embed(
         colour=discord.Color.from_rgb(244, 182, 89)
     )
+
     for item in items_list["Items"].items():
         if item[0] == _item:
             _cache.append(item[0])
 
             r = await economy.get_user(ctx.message.author.id)
 
-            user_balance = r[1]
-            your_items = r[3]
-            your_items = your_items.split(" | ")
+            your_items = r.items.split(" | ")
+
             if item[0] in your_items:
                 embed.add_field(name="Error", value=f"You already have that item!")
                 embed.set_footer(text=f"Invoked by {ctx.message.author.name}", icon_url=ctx.message.author.avatar_url)
                 await ctx.send(embed=embed)
+
                 return
 
-            if user_balance >= item[1]["price"]:
+            if r.bank >= item[1]["price"]:
                 await economy.add_item(ctx.message.author.id, item[0])
                 await economy.remove_money(ctx.message.author.id, "bank", item[1]["price"])
 
@@ -335,8 +335,7 @@ async def sell(ctx: commands.Context, *, _item: str):
 
     _item = _item.lower()
 
-    your_items = r[3]
-    your_items_list = your_items.split(" | ")
+    your_items_list = r.items.split(" | ")
 
     embed = discord.Embed(
         colour=discord.Color.from_rgb(244, 182, 89)
@@ -360,4 +359,5 @@ async def sell(ctx: commands.Context, *, _item: str):
 
 # Pass here token as string
 client.run()
+
 ```
