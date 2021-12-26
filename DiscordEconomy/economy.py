@@ -1,27 +1,30 @@
 import asyncio
 import aiosqlite
 
+from typing import Optional
+
 from .exceptions import (NoItemFound, ItemAlreadyExists)
-
-
-async def is_table_exists():
-    con = await aiosqlite.connect("database.db")
-    c = await con.cursor()
-
-    await c.execute("CREATE TABLE IF NOT EXISTS economy(id integer, bank integer, wallet integer, items text)")
-
-    await con.commit()
-    await con.close()
+from .objects import UserObject
 
 
 class Economy:
-    def __init__(self):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(is_table_exists())
+    def __init__(self, database_name: Optional[str] = "database.db"):
+        self.database_name = database_name
+        self.loop = asyncio.get_event_loop()
+        self.loop.run_until_complete(self.is_table_exists())
+
+    async def is_table_exists(self):
+        con = await aiosqlite.connect(self.database_name)
+        c = await con.cursor()
+
+        await c.execute("CREATE TABLE IF NOT EXISTS economy(id integer, bank integer, wallet integer, items text)")
+
+        await con.commit()
+        await con.close()
 
     async def is_registered(self, user_id):
 
-        con = await aiosqlite.connect("database.db")
+        con = await aiosqlite.connect(self.database_name)
         c = await con.cursor()
 
         query = await c.execute("SELECT * FROM economy WHERE id = ?", (user_id,))
@@ -37,7 +40,7 @@ class Economy:
 
     async def get_user(self, user_id):
 
-        con = await aiosqlite.connect("database.db")
+        con = await aiosqlite.connect(self.database_name)
         c = await con.cursor()
 
         r = await c.execute("SELECT * FROM economy WHERE id = ?", (user_id,))
@@ -45,11 +48,15 @@ class Economy:
 
         await con.close()
 
-        return r
+        bank = r[1]
+        wallet = r[2]
+        items = r[3]
+
+        return UserObject(bank, wallet, items)
 
     async def delete_user_account(self, user_id):
 
-        con = await aiosqlite.connect("database.db")
+        con = await aiosqlite.connect(self.database_name)
         c = await con.cursor()
 
         await c.execute("DELETE FROM economy WHERE id = ?", (user_id,))
@@ -61,7 +68,7 @@ class Economy:
 
     async def get_all_data(self):
 
-        con = await aiosqlite.connect("database.db")
+        con = await aiosqlite.connect(self.database_name)
         c = await con.cursor()
 
         r = await c.execute("SELECT * FROM economy")
@@ -73,7 +80,7 @@ class Economy:
 
     async def add_money(self, user_id, value, amount):
 
-        con = await aiosqlite.connect("database.db")
+        con = await aiosqlite.connect(self.database_name)
         c = await con.cursor()
 
         user_account = await c.execute(f"SELECT {value} FROM economy WHERE id = ?", (user_id,))
@@ -91,7 +98,7 @@ class Economy:
 
     async def remove_money(self, user_id, value, amount):
 
-        con = await aiosqlite.connect("database.db")
+        con = await aiosqlite.connect(self.database_name)
         c = await con.cursor()
 
         user_account = await c.execute(f"SELECT {value} FROM economy WHERE id = ?", (user_id,))
@@ -109,7 +116,7 @@ class Economy:
 
     async def set_money(self, user_id, value, amount):
 
-        con = await aiosqlite.connect("database.db")
+        con = await aiosqlite.connect(self.database_name)
         c = await con.cursor()
 
         await c.execute(f"UPDATE economy SET {value} = ? WHERE id = ?", (amount, user_id,))
@@ -121,7 +128,7 @@ class Economy:
 
     async def add_item(self, user_id, item):
 
-        con = await aiosqlite.connect("database.db")
+        con = await aiosqlite.connect(self.database_name)
         c = await con.cursor()
 
         r = await c.execute("SELECT items FROM economy WHERE id = ?", (user_id,))
@@ -146,7 +153,7 @@ class Economy:
 
     async def remove_item(self, user_id, item):
 
-        con = await aiosqlite.connect("database.db")
+        con = await aiosqlite.connect(self.database_name)
         c = await con.cursor()
 
         r = await c.execute("SELECT items FROM economy WHERE id = ?", (user_id,))
@@ -163,9 +170,7 @@ class Economy:
                 your_items = "| " + your_items
 
             your_items = your_items.replace("| " + item + " |", "")
-
-            if your_items.startswith(" "):
-                your_items = your_items[1:]
+            your_items = your_items.strip()
 
             await c.execute("UPDATE economy SET items = ? WHERE id = ?", (your_items, user_id))
 
