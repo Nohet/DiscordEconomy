@@ -263,9 +263,7 @@ async def buy(ctx: commands.Context, *, _item: str):
 
             r = await economy.get_user(ctx.message.author.id)
 
-            your_items = r.items.split(" | ")
-
-            if item[0] in your_items:
+            if item[0] in r.items:
                 embed.add_field(name="Error", value=f"You already have that item!")
                 embed.set_footer(text=f"Invoked by {ctx.message.author.name}", icon_url=ctx.message.author.avatar_url)
                 await ctx.send(embed=embed)
@@ -301,13 +299,11 @@ async def sell(ctx: commands.Context, *, _item: str):
 
     _item = _item.lower()
 
-    your_items_list = r.items.split(" | ")
-
     embed = discord.Embed(
         colour=discord.Color.from_rgb(244, 182, 89)
     )
 
-    if _item in your_items_list:
+    if _item in r.items:
         for item in items_list["Items"].items():
             if item[0] == _item:
                 item_prc = item[1]["price"] / 2
