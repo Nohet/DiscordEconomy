@@ -1,14 +1,26 @@
-# DiscordEconomy 1.3.2
+# DiscordEconomy 1.3.3
 [![Downloads](https://pepy.tech/badge/discordeconomy)](https://pepy.tech/project/discordeconomy)
 
 Discord.py, other libs, and forks(pycord, nextcord etc.) extension to create economy easily.
-## ⚙️| Installation
+
+## Release Informations
+<details about="siema">
+<summary>Release 1.3.3</summary>
+
+- Added simple documentation
+</details>
+
+
+## Important Links
+* [Documentation](https://nohet.github.io/DiscordEconomy/)
+
+## Installation
 
 You can install package directly from pypi
 
 `pip install DiscordEconomy`
  
-## 🔧 | Functions available
+## Functions available
 
 The current list of asynchronous functions available are:
 
@@ -23,14 +35,12 @@ await set_money(user_id, value, amount)
 await add_item(user_id, item)
 await remove_item(user_id, item)
  ```
+ 
 
+## Example Usage
+<details>
+<summary>Click for example usage(discord.py)</summary>
 
- ## 🔗 | Important Links
- * Documentation - *soon*
-   (do someone even need documentation?)
-
-
-## 🚀 | Example Usage
 ```python
 import random
 
@@ -297,9 +307,7 @@ async def buy(ctx: commands.Context, *, _item: str):
 
             r = await economy.get_user(ctx.message.author.id)
 
-            your_items = r.items.split(" | ")
-
-            if item[0] in your_items:
+            if item[0] in r.items:
                 embed.add_field(name="Error", value=f"You already have that item!")
                 embed.set_footer(text=f"Invoked by {ctx.message.author.name}", icon_url=ctx.message.author.avatar_url)
                 await ctx.send(embed=embed)
@@ -335,13 +343,11 @@ async def sell(ctx: commands.Context, *, _item: str):
 
     _item = _item.lower()
 
-    your_items_list = r.items.split(" | ")
-
     embed = discord.Embed(
         colour=discord.Color.from_rgb(244, 182, 89)
     )
 
-    if _item in your_items_list:
+    if _item in r.items:
         for item in items_list["Items"].items():
             if item[0] == _item:
                 item_prc = item[1]["price"] / 2
@@ -361,3 +367,27 @@ async def sell(ctx: commands.Context, *, _item: str):
 client.run()
 
 ```
+
+</details>
+
+<details>
+<summary>Click for example usage without any library</summary>
+
+```python
+import DiscordEconomy
+import asyncio
+
+economy = DiscordEconomy.Economy()
+
+
+async def main() -> None:
+    await economy.is_registered(12345)
+    await economy.add_item(12345, "dorayaki")
+    
+    r = await economy.get_user(12345)
+    print(r.items)
+
+asyncio.get_event_loop().run_until_complete(main())
+```
+
+</details>
