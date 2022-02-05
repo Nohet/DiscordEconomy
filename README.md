@@ -1,14 +1,23 @@
-# DiscordEconomy 1.3.3
+# DiscordEconomy 1.3.4
 [![Downloads](https://pepy.tech/badge/discordeconomy)](https://pepy.tech/project/discordeconomy)
 
-Discord.py, other libs, and forks(pycord, nextcord etc.) extension to create economy easily.
+Discord.py, other libs(hikar etc.), and forks(pycord, nextcord etc.) extension to create economy easily.
 
-## Release Informations
-<details about="siema">
+## Release Information
+<details>
+<summary>Release 1.3.4</summary>
+
+- added checking for the latest version
+- code rewrite
+</details>
+
+<details about="Release Information">
+
 <summary>Release 1.3.3</summary>
 
 - Added simple documentation
 </details>
+
 
 
 ## Important Links
@@ -25,15 +34,15 @@ You can install package directly from pypi
 The current list of asynchronous functions available are:
 
 ```python
-await is_registered(user_id)
-await get_user(user_id)
-await delete_user_account(user_id)
-await get_all_data()
-await add_money(user_id, value, amount)
-await remove_money(user_id, value, amount)
-await set_money(user_id, value, amount)
-await add_item(user_id, item)
-await remove_item(user_id, item)
+await <economy>.is_registered(user_id)
+await <economy>.get_user(user_id)
+await <economy>.delete_user_account(user_id)
+await <economy>.get_all_data()
+await <economy>.add_money(user_id, value, amount)
+await <economy>.remove_money(user_id, value, amount)
+await <economy>.set_money(user_id, value, amount)
+await <economy>.add_item(user_id, item)
+await <economy>.remove_item(user_id, item)
  ```
  
 
