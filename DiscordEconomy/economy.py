@@ -6,6 +6,8 @@ from typing import Optional
 from .exceptions import (NoItemFound, ItemAlreadyExists)
 from .objects import UserObject
 
+from .__version__ import check_for_updates
+
 
 class Economy:
     def __init__(self, database_name: Optional[str] = "database.db"):
@@ -15,9 +17,12 @@ class Economy:
 
         self.database_name = database_name
         self.loop = asyncio.get_event_loop()
-        self.loop.run_until_complete(self.is_table_exists())
 
-    async def is_table_exists(self):
+        self.loop.run_until_complete(self.__is_table_exists())
+        self.loop.run_until_complete(check_for_updates())
+
+
+    async def __is_table_exists(self):
         """Checks if table exists, if not it creates economy table"""
 
         con = await aiosqlite.connect(self.database_name)
