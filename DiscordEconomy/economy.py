@@ -15,17 +15,17 @@ class Economy:
         Initialize default options, save database name
         """
 
-        self.database_name = database_name
-        self.loop = asyncio.get_event_loop()
+        self.__database_name = database_name
+        self.__loop = asyncio.get_event_loop()
 
-        self.loop.run_until_complete(self.__is_table_exists())
-        self.loop.run_until_complete(check_for_updates())
+        self.__loop.run_until_complete(self.__is_table_exists())
+        self.__loop.run_until_complete(check_for_updates())
 
 
     async def __is_table_exists(self):
         """Checks if table exists, if not it creates economy table"""
 
-        con = await aiosqlite.connect(self.database_name)
+        con = await aiosqlite.connect(self.__database_name)
         c = await con.cursor()
 
         await c.execute("CREATE TABLE IF NOT EXISTS economy(id integer, bank integer, wallet integer, items text)")
@@ -44,7 +44,7 @@ class Economy:
         bool
         """
 
-        con = await aiosqlite.connect(self.database_name)
+        con = await aiosqlite.connect(self.__database_name)
         c = await con.cursor()
 
         query = await c.execute("SELECT * FROM economy WHERE id = ?", (user_id,))
@@ -92,7 +92,7 @@ class Economy:
 
         """
 
-        con = await aiosqlite.connect(self.database_name)
+        con = await aiosqlite.connect(self.__database_name)
         c = await con.cursor()
 
         r = await c.execute("SELECT * FROM economy WHERE id = ?", (user_id,))
@@ -122,7 +122,7 @@ class Economy:
         bool
         """
 
-        con = await aiosqlite.connect(self.database_name)
+        con = await aiosqlite.connect(self.__database_name)
         c = await con.cursor()
 
         await c.execute("DELETE FROM economy WHERE id = ?", (user_id,))
@@ -163,7 +163,7 @@ class Economy:
 
         """
 
-        con = await aiosqlite.connect(self.database_name)
+        con = await aiosqlite.connect(self.__database_name)
         c = await con.cursor()
 
         r = await c.execute("SELECT * FROM economy")
@@ -212,7 +212,7 @@ class Economy:
         bool
         """
 
-        con = await aiosqlite.connect(self.database_name)
+        con = await aiosqlite.connect(self.__database_name)
         c = await con.cursor()
 
         user_account = await c.execute(f"SELECT {value} FROM economy WHERE id = ?", (user_id,))
@@ -245,7 +245,7 @@ class Economy:
         bool
         """
 
-        con = await aiosqlite.connect(self.database_name)
+        con = await aiosqlite.connect(self.__database_name)
         c = await con.cursor()
 
         user_account = await c.execute(f"SELECT {value} FROM economy WHERE id = ?", (user_id,))
@@ -278,7 +278,7 @@ class Economy:
         bool
         """
 
-        con = await aiosqlite.connect(self.database_name)
+        con = await aiosqlite.connect(self.__database_name)
         c = await con.cursor()
 
         await c.execute(f"UPDATE economy SET {value} = ? WHERE id = ?", (amount, user_id,))
@@ -319,7 +319,7 @@ class Economy:
         bool | if user already have this item raises ItemAlreadyExists
         """
 
-        con = await aiosqlite.connect(self.database_name)
+        con = await aiosqlite.connect(self.__database_name)
         c = await con.cursor()
 
         query = await c.execute("SELECT items FROM economy WHERE id = ?", (user_id,))
@@ -354,7 +354,7 @@ class Economy:
         bool | if user doesn't have this item
         """
 
-        con = await aiosqlite.connect(self.database_name)
+        con = await aiosqlite.connect(self.__database_name)
         c = await con.cursor()
 
         query = await c.execute("SELECT items FROM economy WHERE id = ?", (user_id,))
