@@ -1,9 +1,17 @@
-# DiscordEconomy 1.3.5
+# DiscordEconomy 1.3.6
 [![Downloads](https://pepy.tech/badge/discordeconomy)](https://pepy.tech/project/discordeconomy)
 
-Discord.py, other libs(hikari etc.), and forks(pycord, nextcord etc.) extension to create economy easily.
+Discord.py, other libs(hikari etc.), and forks(pycord, nextcord etc.) extension to create economy easily with support 
+of **Sqlite**/**MongoDB**.
 
 ## Release Information
+<details>
+<summary>Release 1.3.6</summary>
+
+- deprecated DiscordEconomy.Economy(), use 'from DiscordEconomy.Sqlite import Economy' instead
+- added support for mongodb
+</details>
+
 <details>
 <summary>Release 1.3.5</summary>
 
@@ -57,7 +65,7 @@ await <economy>.remove_item(user_id, item)
 
 ## Example Usage
 
-**Keep in mind that all the examples are available on [GitHub](https://nohet.github.io/DiscordEconomy/)**
+**Keep in mind that all the examples are available on [GitHub](https://github.com/Nohet/DiscordEconomy/tree/main/examples)**
 
 Note that for using this examples you have to change token to yours and:
 - enable message and member intent in discord developer portal while using message commands example
@@ -74,7 +82,10 @@ import typing
 import discord
 from discord import app_commands
 
-import DiscordEconomy
+from DiscordEconomy.Sqlite import Economy
+# or if you want to use mongodb
+# from DiscordEconomy.MongoDB import Economy
+
 
 # Pass here token as string and guild id where to register slash commands
 
@@ -261,12 +272,14 @@ tree = app_commands.CommandTree(client)
 
 tree.add_command(Shop(), guild=TEST_GUILD)
 
-economy = DiscordEconomy.Economy()
+
+economy = Economy()
+# or if you want to use mongodb
+# economy = Economy("mongodb+srv://user:password@clusterIP/Database?retryWrites=true&w=majority", database_name="Discord")
 
 
 @tree.error
 async def on_error(interaction: discord.Interaction, _: app_commands.Command, error: app_commands.AppCommandError):
-    print(USER_COOLDOWNS)
     embed = discord.Embed(
         colour=discord.Color.from_rgb(244, 182, 89)
     )
@@ -337,7 +350,7 @@ async def coinflip(interaction: discord.Interaction, money: int, side: str):
                              icon_url=interaction.user.avatar.url)
             await interaction.response.send_message(embed=embed)
         else:
-            await economy.remove_money(interaction.user.id, "bank", money)
+            await economy.remove_money(interaction.user.id, "wallet", money)
 
             embed.add_field(name="Coinflip", value=f"You lost coinflip! - {random_arg}")
             embed.set_footer(text=f"Invoked by {interaction.user.name}",
@@ -530,7 +543,10 @@ import random
 import discord
 from discord.ext import commands
 
-import DiscordEconomy
+from DiscordEconomy.Sqlite import Economy
+# or if you want to use mongodb
+# from DiscordEconomy.MongoDB import Economy
+
 
 # Pass here token as string
 BOT_TOKEN = ""
@@ -540,7 +556,9 @@ intents.message_content = True
 intents.members = True
 
 client = commands.Bot(command_prefix="?", intents=intents)
-economy = DiscordEconomy.Economy()
+economy = Economy()
+# or if you want to use mongodb
+# economy = Economy("mongodb+srv://user:password@clusterIP/Database?retryWrites=true&w=majority", database_name="Discord")
 
 
 async def is_registered(ctx):
@@ -927,6 +945,7 @@ async def horse_racing(ctx: commands.Context, money: int):
 
 
 asyncio.new_event_loop().run_until_complete(client.start(token=BOT_TOKEN, reconnect=True))
+
 ```
 
 </details>
@@ -937,9 +956,9 @@ asyncio.new_event_loop().run_until_complete(client.start(token=BOT_TOKEN, reconn
 ```python
 import asyncio
 
-import DiscordEconomy
+from DiscordEconomy.Sqlite import Economy
 
-economy = DiscordEconomy.Economy()
+economy = Economy()
 
 
 async def main() -> None:

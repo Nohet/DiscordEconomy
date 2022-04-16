@@ -8,8 +8,9 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="DiscordEconomy",
-    version="1.3.5",
-    description="Discord.py, other libs(hikari etc.), and forks(pycord, nextcord etc.) extension to create economy easily.",
+    version="1.3.6",
+    description="Discord.py, other libs(hikari etc.), and forks(pycord, nextcord etc.) extension to create economy "
+                "easily with support of Sqlite/MongoDB.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Nohet/DiscordEconomy",
@@ -24,5 +25,5 @@ setup(
     ],
     keywords="discord, discord extension, discord.py, economy, economy bot, discord economy, DiscordEconomy",
     packages=find_packages(),
-    install_requires=["aiosqlite", "aiohttp"],
+    install_requires=["aiosqlite", "aiohttp", "motor", "dnspython", "nest-asyncio"],
 )
