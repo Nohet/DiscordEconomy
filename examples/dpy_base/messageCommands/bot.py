@@ -4,7 +4,10 @@ import random
 import discord
 from discord.ext import commands
 
-import DiscordEconomy
+from DiscordEconomy.Sqlite import Economy
+# or if you want to use mongodb
+# from DiscordEconomy.MongoDB import Economy
+
 
 # Pass here token as string
 BOT_TOKEN = ""
@@ -14,7 +17,9 @@ intents.message_content = True
 intents.members = True
 
 client = commands.Bot(command_prefix="?", intents=intents)
-economy = DiscordEconomy.Economy()
+economy = Economy()
+# or if you want to use mongodb
+# economy = Economy("mongodb+srv://user:password@clusterIP/Database?retryWrites=true&w=majority", database_name="Discord")
 
 
 async def is_registered(ctx):

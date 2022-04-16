@@ -1,8 +1,8 @@
 import asyncio
 
-import DiscordEconomy
+from DiscordEconomy.Sqlite import Economy
 
-economy = DiscordEconomy.Economy()
+economy = Economy()
 
 
 async def main() -> None:

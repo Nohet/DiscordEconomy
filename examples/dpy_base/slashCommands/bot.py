@@ -5,7 +5,10 @@ import typing
 import discord
 from discord import app_commands
 
-import DiscordEconomy
+from DiscordEconomy.Sqlite import Economy
+# or if you want to use mongodb
+# from DiscordEconomy.MongoDB import Economy
+
 
 # Pass here token as string and guild id where to register slash commands
 
@@ -192,7 +195,10 @@ tree = app_commands.CommandTree(client)
 
 tree.add_command(Shop(), guild=TEST_GUILD)
 
-economy = DiscordEconomy.Economy()
+
+economy = Economy()
+# or if you want to use mongodb
+# economy = Economy("mongodb+srv://user:password@clusterIP/Database?retryWrites=true&w=majority", database_name="Discord")
 
 
 @tree.error
