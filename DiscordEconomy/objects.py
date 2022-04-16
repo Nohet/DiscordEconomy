@@ -7,3 +7,6 @@ class UserObject(object):
         self.bank = bank
         self.wallet = wallet
         self.items = items
+
+    def __repr__(self):
+        return f"User(bank={self.bank}, wallet={self.wallet}, items={self.items})"
