@@ -202,7 +202,7 @@ economy = Economy()
 
 
 @tree.error
-async def on_error(interaction: discord.Interaction, _: app_commands.Command, error: app_commands.AppCommandError):
+async def on_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
     print(USER_COOLDOWNS)
     embed = discord.Embed(
         colour=discord.Color.from_rgb(244, 182, 89)
