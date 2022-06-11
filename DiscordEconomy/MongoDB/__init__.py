@@ -1,4 +1,5 @@
 import asyncio
+import typing
 
 from typing import Optional
 
@@ -11,6 +12,8 @@ from nest_asyncio import apply
 
 apply()
 
+__all__ = ["Economy"]
+
 
 class Economy:
     def __init__(self, mongo_url: str, database_name: str, collection: Optional[str] = "economy"):
@@ -20,12 +23,12 @@ class Economy:
         self.__client = motor_asyncio.AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
 
         self.__db = self.__client[database_name]
-        self.collection = self.__db[collection]
+        self.__collection = self.__db[collection]
 
         asyncio.get_event_loop().run_until_complete(check_for_updates())
 
 
-    async def is_registered(self, user_id):
+    async def is_registered(self, user_id: typing.Union[str, int]) -> bool:
         """
         **Params**:
         \n
@@ -36,15 +39,15 @@ class Economy:
         bool
         """
 
-        user = await self.collection.find_one({"_id": user_id})
+        user = await self.__collection.find_one({"_id": user_id})
         if not user:
             user_obj = {"_id": user_id, "bank": 0, "wallet": 0, "items": []}
 
-            await self.collection.insert_one(user_obj)
+            await self.__collection.insert_one(user_obj)
 
         return True
 
-    async def get_user(self, user_id):
+    async def get_user(self, user_id: typing.Union[str, int]) -> UserObject:
         """
         Obtains user from a database
 
@@ -78,11 +81,11 @@ class Economy:
 
         """
 
-        r = await self.collection.find_one({"_id": user_id})
+        r = await self.__collection.find_one({"_id": user_id})
 
         return UserObject(r["bank"], r["wallet"], r["items"])
 
-    async def delete_user_account(self, user_id):
+    async def delete_user_account(self, user_id: typing.Union[str, int]) -> None:
         """
         Deletes user account from a database
 
@@ -95,11 +98,10 @@ class Economy:
         bool
         """
 
-        await self.collection.delete_one({"_id": user_id})
+        await self.__collection.delete_one({"_id": user_id})
 
-        return True
 
-    async def get_all_data(self):
+    async def get_all_data(self) -> typing.AsyncGenerator[UserObject]:
         """
         Obtains all data from database
 
@@ -130,12 +132,12 @@ class Economy:
 
         """
 
-        data = self.collection.find()
+        data = self.__collection.find()
 
         async for user in data:
             yield UserObject(user["bank"], user["wallet"], user["items"])
 
-    async def add_money(self, user_id, value, amount):
+    async def add_money(self, user_id: typing.Union[str, int], value: str, amount: int) -> None:
         """
         Adds money to user account
 
@@ -168,13 +170,12 @@ class Economy:
         bool
         """
 
-        user = await self.collection.find_one({"_id": user_id})
+        user = await self.__collection.find_one({"_id": user_id})
 
-        await self.collection.update_one({"_id": user_id}, {"$set": {value: user[value] + amount}})
+        await self.__collection.update_one({"_id": user_id}, {"$set": {value: user[value] + amount}})
 
-        return True
 
-    async def remove_money(self, user_id, value, amount):
+    async def remove_money(self, user_id: typing.Union[str, int], value: str, amount: int) -> None:
         """
         Adds money to user account
 
@@ -191,13 +192,12 @@ class Economy:
         bool
         """
 
-        user = await self.collection.find_one({"_id": user_id})
+        user = await self.__collection.find_one({"_id": user_id})
 
-        await self.collection.update_one({"_id": user_id}, {"$set": {value: user[value] - amount}})
+        await self.__collection.update_one({"_id": user_id}, {"$set": {value: user[value] - amount}})
 
-        return True
 
-    async def set_money(self, user_id, value, amount):
+    async def set_money(self, user_id: typing.Union[str, int], value: str, amount: int) -> None:
         """
         Sets user money to certain amount
 
@@ -214,11 +214,10 @@ class Economy:
         bool
         """
 
-        await self.collection.update_one({"_id": user_id}, {"$set": {value: amount}})
+        await self.__collection.update_one({"_id": user_id}, {"$set": {value: amount}})
 
-        return True
 
-    async def add_item(self, user_id, item):
+    async def add_item(self, user_id: typing.Union[str, int], item: str) -> None:
         """
         Adds item to user account
 
@@ -249,18 +248,16 @@ class Economy:
         bool | if user already have this item raises ItemAlreadyExists
         """
 
-        r = await self.collection.find_one({"_id": user_id})
+        r = await self.__collection.find_one({"_id": user_id})
 
         if item in r["items"]:
             raise ItemAlreadyExists("User already have this item")
 
         r["items"].append(item)
-        await self.collection.update_one({"_id": user_id}, {"$set": {"items": r["items"]}})
+        await self.__collection.update_one({"_id": user_id}, {"$set": {"items": r["items"]}})
 
 
-        return True
-
-    async def remove_item(self, user_id, item):
+    async def remove_item(self, user_id: typing.Union[str, int], item: str) -> None:
         """
         Removes item to user account
 
@@ -275,14 +272,13 @@ class Economy:
         bool | if user doesn't have this item
         """
 
-        r = await self.collection.find_one({"_id": user_id})
+        r = await self.__collection.find_one({"_id": user_id})
 
         if item in r["items"]:
             r["items"].pop(r["items"].index(item))
 
-            await self.collection.update_one({"_id": user_id}, {"$set": {"items": r["items"]}})
+            await self.__collection.update_one({"_id": user_id}, {"$set": {"items": r["items"]}})
 
-            return True
 
         else:
             raise NoItemFound("User doesn't have this item")

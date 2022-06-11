@@ -1,10 +1,19 @@
-# DiscordEconomy 1.3.6
+# DiscordEconomy 1.3.7
 [![Downloads](https://pepy.tech/badge/discordeconomy)](https://pepy.tech/project/discordeconomy)
+![PyPI - License](https://img.shields.io/pypi/l/DiscordEconomy)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/Nohet/DiscordEconomy.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Nohet/DiscordEconomy/context:python)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/Nohet/DiscordEconomy.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Nohet/DiscordEconomy/alerts/)
 
 Discord.py, other libs(hikari etc.), and forks(pycord, nextcord etc.) extension to create economy easily with support 
 of **Sqlite**/**MongoDB**.
 
 ## Release Information
+<details>
+<summary>Release 1.3.7</summary>
+
+- added full typing for functios
+</details>
+
 <details>
 <summary>Release 1.3.6</summary>
 

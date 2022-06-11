@@ -1,9 +1,10 @@
 from warnings import warn
 
+__all__ = ["Economy"]
+
 
 class Economy:
     def __init__(self, *_, **__):
-
         """
         Deprecated
         """

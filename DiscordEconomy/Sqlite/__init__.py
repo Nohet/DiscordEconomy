@@ -1,4 +1,6 @@
 import asyncio
+import typing
+
 import aiosqlite
 
 from typing import Optional
@@ -7,6 +9,8 @@ from ..exceptions import (NoItemFound, ItemAlreadyExists)
 from ..objects import UserObject
 
 from ..__version__ import check_for_updates
+
+__all__ = ["Economy"]
 
 
 class Economy:
@@ -22,7 +26,7 @@ class Economy:
         self.__loop.run_until_complete(check_for_updates())
 
 
-    async def __is_table_exists(self):
+    async def __is_table_exists(self) -> None:
         """Checks if table exists, if not it creates economy table"""
 
         con = await aiosqlite.connect(self.__database_name)
@@ -33,7 +37,8 @@ class Economy:
         await con.commit()
         await con.close()
 
-    async def is_registered(self, user_id):
+
+    async def is_registered(self, user_id: typing.Union[str, int]) -> bool:
         """
         **Params**:
         \n
@@ -58,7 +63,8 @@ class Economy:
 
         return True
 
-    async def get_user(self, user_id):
+
+    async def get_user(self, user_id: typing.Union[str, int]) -> UserObject:
         """
         Obtains user from a database
 
@@ -109,7 +115,8 @@ class Economy:
 
         return UserObject(bank, wallet, items)
 
-    async def delete_user_account(self, user_id):
+
+    async def delete_user_account(self, user_id: typing.Union[str, int]) -> None:
         """
         Deletes user account from a database
 
@@ -130,9 +137,8 @@ class Economy:
         await con.commit()
         await con.close()
 
-        return True
 
-    async def get_all_data(self):
+    async def get_all_data(self) -> typing.AsyncGenerator[UserObject]:
         """
         Obtains all data from database
 
@@ -179,7 +185,7 @@ class Economy:
 
             yield UserObject(user[1], user[2], items)
 
-    async def add_money(self, user_id, value, amount):
+    async def add_money(self, user_id: typing.Union[str, int], value: str, amount: int) -> None:
         """
         Adds money to user account
 
@@ -209,7 +215,7 @@ class Economy:
 
         **Returns**:
         \n
-        bool
+        None
         """
 
         con = await aiosqlite.connect(self.__database_name)
@@ -226,9 +232,8 @@ class Economy:
         await con.commit()
         await con.close()
 
-        return True
 
-    async def remove_money(self, user_id, value, amount):
+    async def remove_money(self, user_id: typing.Union[str, int], value: str, amount: int) -> None:
         """
         Adds money to user account
 
@@ -242,7 +247,7 @@ class Economy:
 
         **Returns**:
         \n
-        bool
+        None
         """
 
         con = await aiosqlite.connect(self.__database_name)
@@ -259,9 +264,8 @@ class Economy:
         await con.commit()
         await con.close()
 
-        return True
 
-    async def set_money(self, user_id, value, amount):
+    async def set_money(self, user_id: typing.Union[str, int], value: str, amount: int) -> None:
         """
         Sets user money to certain amount
 
@@ -275,7 +279,7 @@ class Economy:
 
         **Returns**:
         \n
-        bool
+        None
         """
 
         con = await aiosqlite.connect(self.__database_name)
@@ -286,9 +290,8 @@ class Economy:
         await con.commit()
         await con.close()
 
-        return True
 
-    async def add_item(self, user_id, item):
+    async def add_item(self, user_id: typing.Union[str, int], item: str) -> None:
         """
         Adds item to user account
 
@@ -316,7 +319,7 @@ class Economy:
 
         **Returns**:
         \n
-        bool | if user already have this item raises ItemAlreadyExists
+        None | if user already have this item raises ItemAlreadyExists
         """
 
         con = await aiosqlite.connect(self.__database_name)
@@ -337,9 +340,8 @@ class Economy:
         await con.commit()
         await con.close()
 
-        return True
 
-    async def remove_item(self, user_id, item):
+    async def remove_item(self, user_id: typing.Union[str, int], item: str) -> None:
         """
         Removes item to user account
 
@@ -351,7 +353,7 @@ class Economy:
 
         **Returns**:
         \n
-        bool | if user doesn't have this item
+        None
         """
 
         con = await aiosqlite.connect(self.__database_name)
@@ -370,7 +372,6 @@ class Economy:
             await con.commit()
             await con.close()
 
-            return True
 
         else:
             raise NoItemFound("User doesn't have this item")
