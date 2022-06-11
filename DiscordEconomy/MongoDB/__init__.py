@@ -101,7 +101,7 @@ class Economy:
         await self.__collection.delete_one({"_id": user_id})
 
 
-    async def get_all_data(self) -> typing.AsyncGenerator[UserObject]:
+    async def get_all_data(self) -> typing.AsyncGenerator:
         """
         Obtains all data from database
 

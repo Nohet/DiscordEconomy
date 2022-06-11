@@ -1,4 +1,4 @@
-# DiscordEconomy 1.3.7
+# DiscordEconomy 1.3.72
 [![Downloads](https://pepy.tech/badge/discordeconomy)](https://pepy.tech/project/discordeconomy)
 ![PyPI - License](https://img.shields.io/pypi/l/DiscordEconomy)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/Nohet/DiscordEconomy.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Nohet/DiscordEconomy/context:python)

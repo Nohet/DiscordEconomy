@@ -138,7 +138,7 @@ class Economy:
         await con.close()
 
 
-    async def get_all_data(self) -> typing.AsyncGenerator[UserObject]:
+    async def get_all_data(self) -> typing.AsyncGenerator:
         """
         Obtains all data from database
 

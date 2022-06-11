@@ -8,7 +8,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="DiscordEconomy",
-    version="1.3.7",
+    version="1.3.72",
     description="Discord.py, other libs(hikari etc.), and forks(pycord, nextcord etc.) extension to create economy "
                 "easily with support of Sqlite/MongoDB.",
     long_description=long_description,
