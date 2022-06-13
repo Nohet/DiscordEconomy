@@ -3,8 +3,6 @@ import typing
 
 import aiosqlite
 
-from typing import Optional
-
 from ..exceptions import (NoItemFound, ItemAlreadyExists)
 from ..objects import UserObject
 
@@ -14,7 +12,7 @@ __all__ = ["Economy"]
 
 
 class Economy:
-    def __init__(self, database_name: Optional[str] = "database.db"):
+    def __init__(self, database_name: typing.Optional[str] = "database.db"):
         """
         Initialize default options, save database name
         """
@@ -138,7 +136,7 @@ class Economy:
         await con.close()
 
 
-    async def get_all_data(self) -> typing.AsyncGenerator:
+    async def get_all_data(self) -> typing.AsyncGenerator[UserObject, None]:
         """
         Obtains all data from database
 

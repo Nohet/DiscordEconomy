@@ -1,4 +1,4 @@
-# DiscordEconomy 1.3.72
+# DiscordEconomy 1.3.8
 [![Downloads](https://pepy.tech/badge/discordeconomy)](https://pepy.tech/project/discordeconomy)
 ![PyPI - License](https://img.shields.io/pypi/l/DiscordEconomy)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/Nohet/DiscordEconomy.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Nohet/DiscordEconomy/context:python)
@@ -9,9 +9,14 @@ of **Sqlite**/**MongoDB**.
 
 ## Release Information
 <details>
+<summary>Release 1.3.8</summary>
+
+- fixed typing for get_all_data function
+</details>
+<details>
 <summary>Release 1.3.7</summary>
 
-- added full typing for functios
+- added full typing for functions
 </details>
 
 <details>

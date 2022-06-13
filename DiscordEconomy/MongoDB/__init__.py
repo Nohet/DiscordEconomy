@@ -1,8 +1,6 @@
 import asyncio
 import typing
 
-from typing import Optional
-
 from ..exceptions import (NoItemFound, ItemAlreadyExists)
 from ..objects import UserObject
 
@@ -16,7 +14,7 @@ __all__ = ["Economy"]
 
 
 class Economy:
-    def __init__(self, mongo_url: str, database_name: str, collection: Optional[str] = "economy"):
+    def __init__(self, mongo_url: str, database_name: str, collection: typing.Optional[str] = "economy"):
         """
         Initialize connection with a database.
         """
@@ -101,7 +99,7 @@ class Economy:
         await self.__collection.delete_one({"_id": user_id})
 
 
-    async def get_all_data(self) -> typing.AsyncGenerator:
+    async def get_all_data(self) -> typing.AsyncGenerator[UserObject, None]:
         """
         Obtains all data from database
 
