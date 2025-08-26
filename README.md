@@ -1,86 +1,121 @@
-# DiscordEconomy 1.3.8
+# DiscordEconomy 2.0.0
+
 [![Downloads](https://pepy.tech/badge/discordeconomy)](https://pepy.tech/project/discordeconomy)
 ![PyPI - License](https://img.shields.io/pypi/l/DiscordEconomy)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/Nohet/DiscordEconomy.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Nohet/DiscordEconomy/context:python)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/Nohet/DiscordEconomy.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Nohet/DiscordEconomy/alerts/)
+[![CodeFactor](https://www.codefactor.io/repository/github/nohet/discordeconomy/badge)](https://www.codefactor.io/repository/github/nohet/discordeconomy)
 
-Discord.py, other libs(hikari etc.), and forks(pycord, nextcord etc.) extension to create economy easily with support 
-of **Sqlite**/**MongoDB**.
+A modern and flexible **economy system extension** for Discord bots.
+Supports **discord.py**, **hikari**, and forks like **pycord** or **nextcord**.
+Database support: **SQLite** and **MongoDB**.
 
-## Release Information
-<details>
-<summary>Release 1.3.8</summary>
+---
 
-- fixed typing for get_all_data function
-</details>
-<details>
-<summary>Release 1.3.7</summary>
+## ✨ Features
 
-- added full typing for functions
-</details>
+* Plug-and-play economy system for Discord bots
+* Full async support
+* SQLite & MongoDB backends
+* Easy integration with commands, slash commands, or custom handlers
+* Type hints for better DX (developer experience)
+* Ready-to-use examples
 
-<details>
-<summary>Release 1.3.6</summary>
+---
 
-- deprecated DiscordEconomy.Economy(), use 'from DiscordEconomy.Sqlite import Economy' instead
-- added support for mongodb
-</details>
+## 📦 Installation
 
-<details>
-<summary>Release 1.3.5</summary>
+Install directly from PyPI:
 
-- code rewrite
-- add some more examples(including new discord.py slash commands, and adding a new minigame)
-</details>
+```bash
+pip install DiscordEconomy
+```
 
-<details about="Release Information">
+---
 
-<summary>Release 1.3.4</summary>
-
-- added checking for the latest version
-- code rewrite
-</details>
-
-<details about="Release Information">
-
-<summary>Release 1.3.3</summary>
-
-- Added simple documentation
-</details>
-
-
-
-
-## Important Links
-* [Documentation](https://nohet.github.io/DiscordEconomy/)
-
-## Installation
-
-You can install package directly from pypi
-
-`pip install DiscordEconomy`
- 
-## Functions available
-
-The current list of asynchronous functions available are:
+## 🚀 Quick Start
 
 ```python
-await <economy>.is_registered(user_id)
-await <economy>.get_user(user_id)
-await <economy>.delete_user_account(user_id)
-await <economy>.get_all_data()
-await <economy>.add_money(user_id, value, amount)
-await <economy>.remove_money(user_id, value, amount)
-await <economy>.set_money(user_id, value, amount)
-await <economy>.add_item(user_id, item)
-await <economy>.remove_item(user_id, item)
- ```
- 
+from DiscordEconomy.Sqlite import Economy
 
-## Example Usage
+economy = Economy("economy.db")
+user_id = 12345
 
-**All the examples for this package are available on [GitHub](https://github.com/Nohet/DiscordEconomy/tree/main/examples)**
+# Register user
+await economy.ensure_registered(user_id)
 
-Note that for using this examples you have to change token to yours and:
-- enable message and member intent in discord developer portal while using message commands example
-- enable member intent in discord developer portal and pass guild id where to register slash commands while using slash commands example
+# Add money
+await economy.add_money(user_id, "wallet", 500)
+
+# Get user info
+user = await economy.get_user(user_id)
+print(user)
+```
+
+More examples are available in the [examples folder](https://github.com/Nohet/DiscordEconomy/tree/main/examples).
+
+---
+
+## ⚙️ API Overview
+
+Available async functions:
+
+```python
+await economy.ensure_registered(user_id)
+await economy.get_user(user_id)
+await economy.delete_user_account(user_id)
+await economy.get_all_users()
+await economy.add_money(user_id, field, amount)
+await economy.remove_money(user_id, field, amount)
+await economy.set_money(user_id, field, amount)
+await economy.add_item(user_id, item)
+await economy.remove_item(user_id, item)
+```
+
+---
+
+## 📜 Release Notes
+
+<details>
+<summary><b>2.0.0</b></summary>
+- Complete rewrite (not backward compatible)  
+</details>
+
+<details>
+<summary><b>1.3.8</b></summary>
+- Fixed typing for `get_all_data`  
+</details>
+
+<details>
+<summary><b>1.3.7</b></summary>
+- Full typing for functions  
+</details>
+
+<details>
+<summary><b>1.3.6</b></summary>
+- Deprecated `DiscordEconomy.Economy()`, use `from DiscordEconomy.Sqlite import Economy`  
+- Added MongoDB support  
+</details>
+
+<details>
+<summary><b>1.3.5</b></summary>
+- Code rewrite  
+- More examples (slash commands + new minigame)  
+</details>
+
+<details>
+<summary><b>1.3.4</b></summary>
+- Added version checker  
+- Code rewrite  
+</details>
+
+<details>
+<summary><b>1.3.3</b></summary>
+- Added simple documentation  
+</details>
+
+---
+
+## 🔑 Notes
+
+* Replace the bot token in examples with your own.
+* Enable **Message Intent** and **Member Intent** in the Discord Developer Portal if you use message commands.
+* For slash commands, enable **Member Intent** and provide your Guild ID.

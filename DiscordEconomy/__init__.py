@@ -1,11 +1,11 @@
 from .economy import *
 
 __title__ = "DiscordEconomy"
-__summary__ = "Discord.py, other libs(hikari etc.), and forks(pycord, nextcord etc.) extension to create economy " \
-              "easily with support of Sqlite/MongoDB."
+__summary__ = ("Easy-to-use economy extension for Discord bots with support for discord.py, hikari, "
+               "pycord, nextcord - powered by SQLite or MongoDB.")
 __uri__ = "https://github.com/Nohet/DiscordEconomy"
-__version__ = "1.3.8"
+__version__ = "2.0.0"
 __author__ = "Nohet"
 __email__ = "igorczupryniak503@gmail.com"
 __license__ = "MIT License"
-__copyright__ = f"Copyright 2022 {__author__}"
+__copyright__ = f"Copyright 2025 {__author__}"

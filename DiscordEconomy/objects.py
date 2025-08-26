@@ -1,12 +1,20 @@
-class UserObject(object):
+from typing import List
+from dataclasses import dataclass
+
+
+@dataclass
+class Item:
+    id: int
+    name: str
+    owner_id: int
+
+
+@dataclass
+class User:
     """
     User object, returned from a database.
     """
-
-    def __init__(self, bank, wallet, items):
-        self.bank = bank
-        self.wallet = wallet
-        self.items = items
-
-    def __repr__(self):
-        return f"User(bank={self.bank}, wallet={self.wallet}, items={self.items})"
+    id: int
+    bank: float
+    wallet: float
+    items: List[Item]

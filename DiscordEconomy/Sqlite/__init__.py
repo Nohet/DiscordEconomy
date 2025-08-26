@@ -1,375 +1,394 @@
 import asyncio
 import typing
-
 import aiosqlite
 
-from ..exceptions import (NoItemFound, ItemAlreadyExists)
-from ..objects import UserObject
+from aiosqlitepool import SQLiteConnectionPool
 
+from ..constants import VALID_FIELDS, VALID_FIELDS_LITERAL
+from ..exceptions import (
+    NotFoundException,
+    NegativeAmountException,
+    EnsurePositiveBalanceException,
+)
+from ..objects import User, Item
 from ..__version__ import check_for_updates
 
 __all__ = ["Economy"]
 
 
 class Economy:
-    def __init__(self, database_name: typing.Optional[str] = "database.db"):
-        """
-        Initialize default options, save database name
-        """
+    """
+    An asynchronous SQLite-based economy system for managing user balances and items.
 
+    This class provides methods to manage user accounts, currency balances, and inventory items
+    using SQLite with connection pooling for efficient database operations.
+
+    Attributes:
+        database_name (str): The name/path of the SQLite database file
+        ensure_positive_balance (bool): If True, prevents balances from going negative
+                                        through validation checks
+    """
+
+    def __init__(
+        self,
+        database_name: typing.Optional[str] = "economy.db",
+        ensure_positive_balance: bool = True,
+    ):
+        """
+        Initialize the economy system with database connection settings.
+
+        Args:
+            database_name: Name/path of the SQLite database file.
+                         Defaults to "economy.db"
+            ensure_positive_balance: Whether to prevent negative balances.
+                                    Defaults to True
+
+        Note:
+            Automatically checks for table existence and creates them if needed.
+            Also checks for package updates during initialization.
+        """
+        self.__ensure_positive_balance = ensure_positive_balance
         self.__database_name = database_name
-        self.__loop = asyncio.get_event_loop()
+
+        try:
+            self.__loop = asyncio.get_running_loop()
+        except RuntimeError:
+            self.__loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.__loop)
+
+        self.pool = SQLiteConnectionPool(self.__connection_factory)
 
         self.__loop.run_until_complete(self.__is_table_exists())
         self.__loop.run_until_complete(check_for_updates())
 
+    async def __connection_factory(self) -> aiosqlite.Connection:
+        """
+        Create and configure a new database connection.
+
+        Returns:
+            aiosqlite.Connection: Configured database connection with optimized settings
+
+        Note:
+            Applies performance optimizations including WAL journal mode,
+            normalized synchronization, and increased cache size.
+        """
+        conn = await aiosqlite.connect(self.__database_name)
+
+        # Performance optimization settings
+        await conn.execute("PRAGMA journal_mode = WAL")
+        await conn.execute("PRAGMA synchronous = NORMAL")
+        await conn.execute("PRAGMA cache_size = 10000")
+        await conn.execute("PRAGMA temp_store = MEMORY")
+        await conn.execute("PRAGMA foreign_keys = ON")
+        await conn.execute("PRAGMA mmap_size = 268435456")
+
+        return conn
 
     async def __is_table_exists(self) -> None:
-        """Checks if table exists, if not it creates economy table"""
-
-        con = await aiosqlite.connect(self.__database_name)
-        c = await con.cursor()
-
-        await c.execute("CREATE TABLE IF NOT EXISTS economy(id integer, bank integer, wallet integer, items text)")
-
-        await con.commit()
-        await con.close()
-
-
-    async def is_registered(self, user_id: typing.Union[str, int]) -> bool:
         """
-        **Params**:
-        \n
-        user_id - user id to check if it is in the database
+        Ensure required database tables exist, creating them if necessary.
 
-        **Returns**:
-        \n
-        bool
+        Creates:
+        - users table with id (primary key), bank, and wallet columns
+        - items table with id, itemName, ownerID columns and foreign key constraint
+        - Index on ownerID for faster item queries
         """
+        async with self.pool.connection() as conn:
+            await conn.execute(
+                """CREATE TABLE IF NOT EXISTS users
+                   (
+                       id     INTEGER PRIMARY KEY,
+                       bank   NUMERIC,
+                       wallet NUMERIC
+                   )"""
+            )
+            await conn.execute(
+                """CREATE TABLE IF NOT EXISTS items
+                   (
+                       id       INTEGER PRIMARY KEY AUTOINCREMENT,
+                       itemName TEXT,
+                       ownerID  INTEGER,
+                       FOREIGN KEY (ownerID) REFERENCES users (id) ON DELETE CASCADE
+                   )"""
+            )
+            await conn.execute(
+                "CREATE INDEX IF NOT EXISTS ownerID_idx ON items(ownerID)"
+            )
+            await conn.commit()
 
-        con = await aiosqlite.connect(self.__database_name)
-        c = await con.cursor()
-
-        query = await c.execute("SELECT * FROM economy WHERE id = ?", (user_id,))
-        query = await query.fetchone()
-
-        if not query:
-            await c.execute(f"INSERT INTO economy VALUES(?, 0, 0, ?)", (user_id, ""))
-
-        await con.commit()
-        await con.close()
-
-        return True
-
-
-    async def get_user(self, user_id: typing.Union[str, int]) -> UserObject:
+    async def ensure_registered(self, user_id: typing.Union[str, int]) -> None:
         """
-        Obtains user from a database
+        Check if a user exists in the database, registering them if not found.
 
-        **Code Example**:
-        \n
-        ```python
-        import DiscordEconomy
-        import asyncio
+        Args:
+            user_id: Discord user ID or unique identifier
 
-        economy = DiscordEconomy.Economy()
-
-
-        async def main() -> None:
-            await economy.is_registered(12345)
-            user = await economy.get_user(12345)
-
-            print(user.wallet)
-            print(user.bank)
-            print(user.items)
-
-        asyncio.get_event_loop().run_until_complete(main())
-        ```
-
-        **Params**:
-        \n
-        user_id - user id to obtain it from this id
-
-        **Returns**:
-        \n
-        UserObject
-
+        Example:
+            >> await economy.ensure_registered(1234567890)
         """
+        async with self.pool.connection() as conn:
+            query = await conn.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+            result = await query.fetchone()
 
-        con = await aiosqlite.connect(self.__database_name)
-        c = await con.cursor()
+            if not result:
+                await conn.execute("INSERT INTO users VALUES(?, 0, 0)", (user_id,))
+                await conn.commit()
 
-        r = await c.execute("SELECT * FROM economy WHERE id = ?", (user_id,))
-        r = await r.fetchone()
+    async def get_user(self, user_id: typing.Union[str, int]) -> User:
+        """
+        Retrieve a user's complete economic profile including items.
 
-        await con.close()
+        Args:
+            user_id: Discord user ID or unique identifier
 
-        bank = r[1]
-        wallet = r[2]
-        items = r[3].split(" | ")
+        Returns:
+            User: User object containing balance information and items
 
-        if items[0] == "":
-            items.pop(0)
+        Raises:
+            NoItemFound: If the specified user doesn't exist
 
-        return UserObject(bank, wallet, items)
+        Example:
+            >> user = await economy.get_user(1234567890)
+            >> print(user.bank, user.wallet, user.items)
+        """
+        async with self.pool.connection() as conn:
+            # Get user base information
+            user_query = await conn.execute(
+                "SELECT * FROM users WHERE id = ?", (user_id,)
+            )
+            user_data = await user_query.fetchone()
 
+            if not user_data:
+                raise NotFoundException(f"User {user_id} not found")
+
+            # Get user's items
+            items_query = await conn.execute(
+                "SELECT * FROM items WHERE ownerID = ?", (user_id,)
+            )
+            items_data = await items_query.fetchall()
+            items = [Item(*item) for item in items_data]
+
+        return User(user_data[0], user_data[1], user_data[2], items)
 
     async def delete_user_account(self, user_id: typing.Union[str, int]) -> None:
         """
-        Deletes user account from a database
+        Permanently delete a user account and all associated items.
 
-        **Params**:
-        \n
-        user_id - which user should be deleted
+        Args:
+            user_id: Discord user ID or unique identifier
 
-        **Returns**:
-        \n
-        bool
+        Note:
+            This action is irreversible and will remove all user data including items
+            due to ON DELETE CASCADE foreign key constraint.
         """
+        async with self.pool.connection() as conn:
+            await conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+            await conn.commit()
 
-        con = await aiosqlite.connect(self.__database_name)
-        c = await con.cursor()
-
-        await c.execute("DELETE FROM economy WHERE id = ?", (user_id,))
-
-        await con.commit()
-        await con.close()
-
-
-    async def get_all_data(self) -> typing.AsyncGenerator[UserObject, None]:
+    async def get_all_users(self) -> typing.AsyncGenerator[User, None]:
         """
-        Obtains all data from database
+        Retrieve all users from the database as an asynchronous generator.
 
-        **Code Example**:
-        \n
-        ```python
-        import DiscordEconomy
-        import asyncio
+        Yields:
+            User: Complete user objects with balances and items
 
-        economy = DiscordEconomy.Economy()
-
-
-        async def main() -> None:
-            r = economy.get_all_data()
-            async for i in r:
-                print(i.bank)
-
-        asyncio.get_event_loop().run_until_complete(main())
-        ```
-
-        **Params**:
-        \n
-        Doesn't take any params
-
-        **Returns**:
-        \n
-        async generator of UserObject
-
+        Example:
+            >> async for user in economy.get_all_users():
+            ...     print(f"User {user.id}: {user.bank} coins")
         """
+        async with self.pool.connection() as conn:
+            user_query = await conn.execute("SELECT * FROM users")
+            users_data = await user_query.fetchall()
 
-        con = await aiosqlite.connect(self.__database_name)
-        c = await con.cursor()
+            for user in users_data:
+                items_query = await conn.execute(
+                    "SELECT * FROM items WHERE ownerID = ?", (user[0],)
+                )
+                items_data = await items_query.fetchall()
+                items = [Item(*item) for item in items_data]
 
-        r = await c.execute("SELECT * FROM economy")
-        r = await r.fetchall()
+                yield User(user[0], user[1], user[2], items)
 
-        await con.close()
-
-        for user in r:
-            items = user[3].split(" | ")
-
-            if items[0] == "":
-                items.pop(0)
-
-            yield UserObject(user[1], user[2], items)
-
-    async def add_money(self, user_id: typing.Union[str, int], value: str, amount: int) -> None:
+    async def add_money(
+        self,
+        user_id: typing.Union[str, int],
+        field: VALID_FIELDS_LITERAL,
+        amount: typing.Union[float, int],
+    ) -> None:
         """
-        Adds money to user account
+        Add money to a user's specified balance field.
 
-        **Code Example**:
-        \n
-        ```python
-        import DiscordEconomy
-        import asyncio
+        Args:
+            user_id: Discord user ID or unique identifier
+            field: Balance field to modify ('bank' or 'wallet')
+            amount: Positive amount to add
 
-        economy = DiscordEconomy.Economy()
+        Raises:
+            ValueError: If invalid field specified
+            NoItemFound: If user doesn't exist
 
-
-        async def main() -> None:
-            await economy.is_registered(12345)
-            await economy.add_money(12345, "wallet", 500)
-
-        asyncio.get_event_loop().run_until_complete(main())
-        ```
-
-        **Params**:
-        \n
-        user_id - user id to add money to
-
-        value - in what place money should be added, for example 'bank' or 'wallet'
-
-        amount - how much should be added to user account
-
-        **Returns**:
-        \n
-        None
+        Example:
+            >> await economy.add_money(1234567890, "wallet", 100)
         """
+        if amount < 0:
+            raise NegativeAmountException(
+                "Invalid amount. Amount cannot be less than 0"
+            )
 
-        con = await aiosqlite.connect(self.__database_name)
-        c = await con.cursor()
+        if field not in VALID_FIELDS:
+            raise ValueError(
+                f"Invalid field: {field}. Must be one of: {', '.join(VALID_FIELDS)}"
+            )
 
-        user_account = await c.execute(f"SELECT {value} FROM economy WHERE id = ?", (user_id,))
-        user_account = await user_account.fetchone()
-        user_account = user_account[0]
+        await self.ensure_registered(user_id)
 
-        money = user_account + amount
+        async with self.pool.connection() as conn:
+            await conn.execute(
+                f"UPDATE users SET {field} = {field} + ? WHERE id = ?",
+                (amount, user_id),
+            )
+            await conn.commit()
 
-        await c.execute(f"UPDATE economy SET {value} = ? WHERE id = ?", (money, user_id,))
-
-        await con.commit()
-        await con.close()
-
-
-    async def remove_money(self, user_id: typing.Union[str, int], value: str, amount: int) -> None:
+    async def remove_money(
+        self,
+        user_id: typing.Union[str, int],
+        field: VALID_FIELDS_LITERAL,
+        amount: typing.Union[float, int],
+    ) -> None:
         """
-        Adds money to user account
+        Remove money from a user's specified balance field.
 
-        **Params**:
-        \n
-        user_id - user id to add money to
+        Args:
+            user_id: Discord user ID or unique identifier
+            field: Balance field to modify ('bank' or 'wallet')
+            amount: Positive amount to remove
 
-        value - in what place money should be removed, for example 'bank' or 'wallet'
+        Raises:
+            ValueError: If invalid field specified
+            NoItemFound: If user doesn't exist
 
-        amount - how much should be removed from user account
-
-        **Returns**:
-        \n
-        None
+        Example:
+            >> await economy.remove_money(1234567890, "bank", 50)
         """
+        if amount < 0:
+            raise NegativeAmountException(
+                "Invalid amount. Amount cannot be less than 0"
+            )
 
-        con = await aiosqlite.connect(self.__database_name)
-        c = await con.cursor()
+        if field not in VALID_FIELDS:
+            raise ValueError(
+                f"Invalid field: {field}. Must be one of: {', '.join(VALID_FIELDS)}"
+            )
 
-        user_account = await c.execute(f"SELECT {value} FROM economy WHERE id = ?", (user_id,))
-        user_account = await user_account.fetchone()
-        user_account = user_account[0]
+        await self.ensure_registered(user_id)
 
-        money = user_account - amount
+        async with self.pool.connection() as conn:
+            if self.__ensure_positive_balance:
+                balance_query = await conn.execute(
+                    f"SELECT {field} FROM users WHERE id = ?", (user_id,)
+                )
+                balance = (await balance_query.fetchone())[0]
 
-        await c.execute(f"UPDATE economy SET {value} = ? WHERE id = ?", (money, user_id,))
+                if balance - amount < 0:
+                    await self.set_money(user_id, field, 0)
+                    return
 
-        await con.commit()
-        await con.close()
+            await conn.execute(
+                f"UPDATE users SET {field} = {field} - ? WHERE id = ?",
+                (amount, user_id),
+            )
+            await conn.commit()
 
-
-    async def set_money(self, user_id: typing.Union[str, int], value: str, amount: int) -> None:
+    async def set_money(
+        self,
+        user_id: typing.Union[str, int],
+        field: VALID_FIELDS_LITERAL,
+        amount: typing.Union[float, int],
+    ) -> None:
         """
-        Sets user money to certain amount
+        Set a user's balance field to a specific amount.
 
-        **Params**:
-        \n
-        user_id - user id to set money
+        Args:
+            user_id: Discord user ID or unique identifier
+            field: Balance field to modify ('bank' or 'wallet')
+            amount: New absolute value for the balance
 
-        value - in what place money should be set, for example 'bank' or 'wallet'
+        Raises:
+            ValueError: If invalid field specified
+            NoItemFound: If user doesn't exist
 
-        amount - to what amount money should be set
-
-        **Returns**:
-        \n
-        None
+        Example:
+            >> await economy.set_money(1234567890, "wallet", 200)
         """
+        if self.__ensure_positive_balance and amount < 0:
+            raise EnsurePositiveBalanceException(
+                "Ensure positive balance is turned on."
+                " User's balance cannot be set to less than 0."
+            )
 
-        con = await aiosqlite.connect(self.__database_name)
-        c = await con.cursor()
+        if field not in VALID_FIELDS:
+            raise ValueError(
+                f"Invalid field: {field}. Must be one of: {', '.join(VALID_FIELDS)}"
+            )
 
-        await c.execute(f"UPDATE economy SET {value} = ? WHERE id = ?", (amount, user_id,))
+        await self.ensure_registered(user_id)
 
-        await con.commit()
-        await con.close()
+        async with self.pool.connection() as conn:
+            await conn.execute(
+                f"UPDATE users SET {field} = ? WHERE id = ?", (amount, user_id)
+            )
+            await conn.commit()
 
-
-    async def add_item(self, user_id: typing.Union[str, int], item: str) -> None:
+    async def add_item(self, user_id: typing.Union[str, int], item_name: str) -> None:
         """
-        Adds item to user account
+        Add an item to a user's inventory.
 
-        **Code Example**:
-        \n
-        ```python
-        import DiscordEconomy
-        import asyncio
+        Args:
+            user_id: Discord user ID or unique identifier
+            item_name: Name of the item to add
 
-        economy = DiscordEconomy.Economy()
+        Raises:
+            ItemAlreadyExists: If user already possesses this item
+            NoItemFound: If user doesn't exist
 
-
-        async def main() -> None:
-            await economy.is_registered(12345)
-            await economy.add_item(12345, "sword")
-
-        asyncio.get_event_loop().run_until_complete(main())
-        ```
-
-        **Params**:
-        \n
-        user_id - user id where the item should be added
-
-        item - which item should be added to user
-
-        **Returns**:
-        \n
-        None | if user already have this item raises ItemAlreadyExists
+        Example:
+            >> await economy.add_item(1234567890, "magic_sword")
         """
+        async with self.pool.connection() as conn:
+            await conn.execute(
+                "INSERT INTO items VALUES(NULL, ?, ?)", (item_name, user_id)
+            )
+            await conn.commit()
 
-        con = await aiosqlite.connect(self.__database_name)
-        c = await con.cursor()
-
-        query = await c.execute("SELECT items FROM economy WHERE id = ?", (user_id,))
-        query = await query.fetchone()
-
-        _user_items = query[0].split(" | ")
-
-        if item in _user_items:
-            raise ItemAlreadyExists("User already have this item")
-
-        _user_items.append(item)
-
-        await c.execute("UPDATE economy SET items = ? WHERE id = ?", (" | ".join(_user_items), user_id))
-
-        await con.commit()
-        await con.close()
-
-
-    async def remove_item(self, user_id: typing.Union[str, int], item: str) -> None:
+    async def remove_item(
+        self, user_id: typing.Union[str, int], item_name: str
+    ) -> None:
         """
-        Removes item to user account
+        Remove an item from a user's inventory.
 
-        **Params**:
-        \n
-        user_id - user id where the item should be removed
+        Args:
+            user_id: Discord user ID or unique identifier
+            item_name: Name of the item to remove
 
-        item - which item should be removed from user
+        Raises:
+            NoItemFound: If either user doesn't exist or item not found
 
-        **Returns**:
-        \n
-        None
+        Example:
+            >> await economy.remove_item(1234567890, "old_sword")
         """
+        async with self.pool.connection() as conn:
+            # Verify item exists
+            check_query = await conn.execute(
+                "SELECT id FROM items WHERE ownerID = ? AND itemName = ?",
+                (user_id, item_name),
+            )
+            if not await check_query.fetchone():
+                raise NotFoundException(
+                    f"Item {item_name} not found for user {user_id}"
+                )
 
-        con = await aiosqlite.connect(self.__database_name)
-        c = await con.cursor()
-
-        query = await c.execute("SELECT items FROM economy WHERE id = ?", (user_id,))
-        query = await query.fetchone()
-
-        _user_items = query[0].split(" | ")
-
-        if item in _user_items:
-            _user_items.pop(_user_items.index(item))
-
-            await c.execute("UPDATE economy SET items = ? WHERE id = ?", (" | ".join(_user_items), user_id))
-
-            await con.commit()
-            await con.close()
-
-
-        else:
-            raise NoItemFound("User doesn't have this item")
+            await conn.execute(
+                "DELETE FROM items WHERE itemName = ? AND ownerID = ?",
+                (item_name, user_id),
+            )
+            await conn.commit()
